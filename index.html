@@ -141,9 +141,14 @@
   /* Selected client + form */
   .selbar{display:flex;align-items:flex-start;gap:12px}
   .selbar .nm{font-size:20px;font-weight:800;line-height:1.2}
-  .selbar .meta{font-size:13.5px;color:var(--muted);margin-top:3px}
-  .selbar .meta a{color:var(--green);font-weight:600;text-decoration:none}
-  .selbar .meta a:hover{text-decoration:underline}
+  .verify{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+  .vrow{display:flex;gap:10px;align-items:baseline;font-size:14.5px}
+  .vrow .vk{flex:none;width:84px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-top:2px}
+  .vrow .vv{font-weight:600;color:var(--ink)}
+  .vrow a{color:var(--green);font-weight:600;text-decoration:none}
+  .vrow a:hover{text-decoration:underline}
+  .vmute{color:var(--muted);font-weight:500}
+  .progchip{display:inline-block;background:var(--green-soft);color:var(--green-deep);font-weight:600;font-size:12.5px;padding:3px 10px;border-radius:999px;margin:0 5px 5px 0}
   .x{margin-left:auto;background:none;border:1px solid var(--line);border-radius:9px;color:var(--muted);width:38px;height:38px;font-size:18px;flex:none}
   .x:hover{border-color:var(--warn);color:var(--warn)}
 
@@ -187,6 +192,14 @@
 
   .hide{display:none !important}
 
+  /* role split */
+  body.staff .admin-only{display:none !important}
+  body:not(.staff) .staff-only{display:none !important}
+  .rolebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin-top:16px}
+  .rolebadge{background:var(--gold);color:#3a2c08;font-weight:800;font-size:11.5px;padding:4px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.6px}
+  .roletip{flex:1;min-width:170px;font-size:13px;color:var(--muted)}
+  .lockbtn{cursor:pointer;color:#fff}
+
   /* CSV fallback modal */
   .modal{position:fixed;inset:0;background:rgba(26,36,32,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
   .modal.show{display:flex}
@@ -206,9 +219,10 @@
   <div class="head-inner">
     <div class="mark">HOPICS <span>Check-In</span></div>
     <div class="head-meta">
-      <span class="pill">Roster <b id="hRoster">0</b></span>
+      <span class="pill admin-only">Roster <b id="hRoster">0</b></span>
       <span class="pill">Checked in <b id="hCount">0</b></span>
       <span class="pill net" id="netPill"><span class="dot"></span><span id="netTxt">Online</span></span>
+      <button class="pill lockbtn staff-only" id="toAdmin">Admin</button>
     </div>
   </div>
   <div class="setup">
@@ -225,8 +239,15 @@
 
 <div class="wrap">
 
+  <!-- ADMIN ROLE BAR -->
+  <div class="rolebar admin-only" id="adminBar">
+    <span class="rolebadge">Admin</span>
+    <span class="roletip">You load the roster and set the questions. Lock the iPad to intake before handing it to staff.</span>
+    <button class="btn" id="toStaff">Switch to staff intake</button>
+  </div>
+
   <!-- ROSTER LOADED STATE -->
-  <div class="card" id="needRoster">
+  <div class="card admin-only" id="needRoster">
     <h2>Load your client roster</h2>
     <p class="sub">Export your clients from HMIS as a CSV, then load the file here. It stays on this device and works with no signal. You only do this once before the event.</p>
     <button class="btn block lg" id="pickBtn">Choose roster CSV</button>
@@ -235,7 +256,7 @@
   </div>
 
   <!-- MAPPING -->
-  <div class="card hide" id="mapCard">
+  <div class="card hide admin-only" id="mapCard">
     <h2>Match your columns</h2>
     <p class="sub" id="mapSub">Found columns in your file. Confirm which is which, then load.</p>
     <div class="map-grid" id="mapGrid"></div>
@@ -261,9 +282,9 @@
   <!-- SELECTED -->
   <div class="card hide" id="formCard">
     <div class="selbar">
-      <div>
+      <div style="flex:1">
         <div class="nm" id="selName"></div>
-        <div class="meta" id="selMeta"></div>
+        <div class="verify" id="selVerify"></div>
       </div>
       <button class="x" id="clearSel" title="Back to search">&times;</button>
     </div>
@@ -275,7 +296,7 @@
   </div>
 
   <!-- RECORDS -->
-  <details class="roster" id="recWrap">
+  <details class="roster admin-only" id="recWrap">
     <summary>Today's check-ins <span class="count-chip" id="recChip" style="margin-left:8px">0</span><span class="chev">&#9662;</span></summary>
     <div class="roster-body">
       <div class="btn-row" style="margin-top:0">
@@ -287,7 +308,7 @@
   </details>
 
   <!-- ROSTER TOOLS -->
-  <details class="roster" id="rosterTools">
+  <details class="roster admin-only" id="rosterTools">
     <summary>Roster tools<span class="chev" style="margin-left:auto">&#9662;</span></summary>
     <div class="roster-body">
       <p class="hint" style="margin-top:0" id="rosterInfo"></p>
@@ -303,7 +324,7 @@
 <!-- SAVE TOTAL BAR -->
 <div class="savebar" id="saveBar">
   <span class="total">Saved today <b id="barTotal">0</b></span>
-  <button class="btn ghost" style="margin-left:auto" id="barExport">Export CSV</button>
+  <button class="btn ghost admin-only" style="margin-left:auto" id="barExport">Export CSV</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -315,11 +336,11 @@
           'text', 'textarea'
    ============================================================ */
 var QUESTIONS = [
-  { id:'services', label:'Services accessed today', type:'checkbox',
-    options:['Housing Navigation','Benefits / CalFresh','ID / Vital Docs','Health Services','Hygiene / Showers','Meals','Employment','Other'] },
-  { id:'living', label:'Current living situation', type:'select',
-    options:['Unsheltered','Sheltered / Interim Housing','Permanent Housing','Unknown'] },
-  { id:'followup', label:'Needs follow up', type:'boolean' },
+  { id:'heard', label:'How did you hear about the event', type:'select',
+    options:['Flyer or postcard','HOPICS outreach worker','Case manager','Partner agency','Word of mouth','Social media','Walked by','Other'] },
+  { id:'firsttime', label:'First time at a HOPICS event', type:'boolean' },
+  { id:'services', label:'Services interested in today', type:'checkbox',
+    options:['Housing','Benefits / CalFresh','ID / Vital Docs','Health / Medical','Mental Health','Employment','Hygiene / Showers','Food','Other'] },
   { id:'notes', label:'Notes', type:'textarea' }
 ];
 
@@ -330,7 +351,9 @@ var K = {
   recs:'hopics_ci_records',
   staff:'hopics_ci_staff',
   evt:'hopics_ci_event',
-  fname:'hopics_ci_filename'
+  fname:'hopics_ci_filename',
+  role:'hopics_ci_role',
+  pin:'hopics_ci_pin'
 };
 
 /* ---------- storage helpers ---------- */
@@ -418,15 +441,25 @@ function confirmMapping(){
   var map={};
   sels.forEach(function(s){ map[s.getAttribute('data-key')]=parseInt(s.value,10); });
   if(map.id<0 && map.name<0 && map.first<0){ alert('Pick at least an ID or a name column.'); return; }
-  var out=[];
+  var byId={}, noId=[];
   pendingRows.forEach(function(r){
     function v(k){ return (map[k]>-1 && r[map[k]]!=null)?(''+r[map[k]]).trim():''; }
     var nm = v('name');
     if(!nm){ nm=(v('last')?v('last')+', ':'')+v('first'); }
     nm=nm.trim();
-    var rec={ id:v('id'), name:nm||'(no name)', program:v('program'), dob:v('dob') };
-    if(rec.id||nm) out.push(rec);
+    var id=v('id'), prog=v('program'), dob=v('dob');
+    if(id){
+      if(!byId[id]) byId[id]={ id:id, name:nm||'(no name)', dob:dob, programs:[] };
+      var rec=byId[id];
+      if((!rec.dob||rec.dob==='') && dob) rec.dob=dob;
+      if((rec.name==='(no name)') && nm) rec.name=nm;
+      if(prog && rec.programs.indexOf(prog)<0) rec.programs.push(prog);
+    } else if(nm){
+      noId.push({ id:'', name:nm, dob:dob, programs: prog?[prog]:[] });
+    }
   });
+  var out=Object.keys(byId).map(function(k){return byId[k];}).concat(noId);
+  out.sort(function(a,b){ return (a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase()); });
   roster=out;
   save(K.roster,roster);
   save(K.map,map);
@@ -441,7 +474,9 @@ function searchClients(term){
   term=term.trim().toLowerCase();
   if(!term) return roster.slice(0,50);
   return roster.filter(function(c){
-    return (c.name||'').toLowerCase().indexOf(term)>-1 || (''+(c.id||'')).toLowerCase().indexOf(term)>-1;
+    if((c.name||'').toLowerCase().indexOf(term)>-1) return true;
+    if((''+(c.id||'')).toLowerCase().indexOf(term)>-1) return true;
+    return (c.programs||[]).some(function(p){return (p||'').toLowerCase().indexOf(term)>-1;});
   }).slice(0,60);
 }
 function renderResults(){
@@ -453,10 +488,13 @@ function renderResults(){
   box.innerHTML='';
   list.forEach(function(c){
     var done=records.some(function(r){return r.id&&r.id===c.id;});
+    var sub=[];
+    if(c.dob) sub.push('DOB '+escapeHtml(c.dob));
+    if(c.programs&&c.programs.length) sub.push(escapeHtml(c.programs.join(', ')));
+    if(c.id) sub.push('ID '+escapeHtml(c.id));
     var b=document.createElement('button');
     b.className='crow';
-    b.innerHTML='<div><div class="nm">'+escapeHtml(c.name)+'</div><div class="mt">'+
-      (c.id?'ID '+escapeHtml(c.id):'')+(c.id&&c.program?' &middot; ':'')+(c.program?escapeHtml(c.program):'')+'</div></div>'+
+    b.innerHTML='<div><div class="nm">'+escapeHtml(c.name)+'</div><div class="mt">'+sub.join(' &middot; ')+'</div></div>'+
       (done?'<span class="chk">Checked in</span>':'');
     b.onclick=function(){ selectClient(c); };
     box.appendChild(b);
@@ -467,13 +505,17 @@ function renderResults(){
 function selectClient(c){
   selected=c;
   document.getElementById('selName').textContent=c.name;
-  var meta=[];
-  if(c.id) meta.push('ID '+c.id);
-  if(c.program) meta.push(c.program);
-  if(c.dob) meta.push('DOB '+c.dob);
-  var html=meta.map(escapeHtml).join(' &middot; ');
-  if(c.id) html+=(meta.length?' &middot; ':'')+'<a href="https://la.clarityhs.com/client/'+encodeURIComponent(c.id)+'/profile" target="_blank" rel="noopener">HMIS profile</a>';
-  document.getElementById('selMeta').innerHTML=html;
+  var progs=(c.programs&&c.programs.length)
+    ? c.programs.map(function(p){return '<span class="progchip">'+escapeHtml(p)+'</span>';}).join('')
+    : '<span class="vmute">None on file</span>';
+  var html='';
+  html+='<div class="vrow"><span class="vk">Birth date</span><span class="vv">'+(c.dob?escapeHtml(c.dob):'<span class="vmute">Not on file</span>')+'</span></div>';
+  html+='<div class="vrow"><span class="vk">Programs</span><span class="vv">'+progs+'</span></div>';
+  if(c.id){
+    html+='<div class="vrow"><span class="vk">HMIS ID</span><span class="vv">'+escapeHtml(c.id)+
+      ' &middot; <a href="https://la.clarityhs.com/client/'+encodeURIComponent(c.id)+'/profile" target="_blank" rel="noopener">Open profile</a></span></div>';
+  }
+  document.getElementById('selVerify').innerHTML=html;
 
   var dupe=records.filter(function(r){return r.id&&r.id===c.id;});
   document.getElementById('dupeMsg').innerHTML = dupe.length
@@ -545,7 +587,9 @@ function saveCheckin(){
   var rec={
     ts:new Date().toISOString(),
     event:evt, staff:staff,
-    id:selected.id, name:selected.name, program:selected.program||'',
+    id:selected.id, name:selected.name,
+    dob:selected.dob||'',
+    programs:(selected.programs||[]).join('; '),
     answers:collectAnswers()
   };
   records.push(rec);
@@ -572,10 +616,10 @@ function renderRecords(){
 }
 
 function buildCSV(){
-  var cols=['Timestamp','Event','Staff','HMIS ID','Name','Program'].concat(QUESTIONS.map(function(q){return q.label;}));
+  var cols=['Timestamp','Event','Staff','HMIS ID','Name','Date of Birth','Programs'].concat(QUESTIONS.map(function(q){return q.label;}));
   var lines=[cols.map(csvCell).join(',')];
   records.forEach(function(r){
-    var row=[r.ts,r.event,r.staff,r.id,r.name,r.program];
+    var row=[r.ts,r.event,r.staff,r.id,r.name,r.dob||'',r.programs||''];
     QUESTIONS.forEach(function(q){ row.push(r.answers[q.id]||''); });
     lines.push(row.map(csvCell).join(','));
   });
@@ -680,6 +724,39 @@ document.getElementById('clearRoster').onclick=function(){
   el.addEventListener('input',function(){ save(id==='staff'?K.staff:K.evt,el.value); });
 });
 
+/* ---------- role split ---------- */
+function applyRole(){
+  var isStaff=(load(K.role,'admin')==='staff');
+  document.body.classList.toggle('staff',isStaff);
+  document.getElementById('evt').readOnly=isStaff;   // event name is locked for staff
+}
+function switchToStaff(){
+  if(!roster.length){ alert('Load the roster first, then switch to staff intake.'); return; }
+  var pin=load(K.pin,'');
+  if(!pin){
+    var p=prompt('Set a 4 digit admin PIN. Staff will use the iPad without it; you enter it to return to admin.');
+    if(p===null) return;
+    p=(''+p).trim();
+    if(!/^[0-9]{4}$/.test(p)){ alert('PIN must be 4 digits. Not changed.'); return; }
+    save(K.pin,p);
+  }
+  save(K.role,'staff'); applyRole();
+  selected=null; show('formCard',false); show('searchCard',true);
+  document.getElementById('q').value=''; renderAll();
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('Staff intake mode on');
+}
+function switchToAdmin(){
+  var pin=load(K.pin,'');
+  var p=prompt('Enter admin PIN');
+  if(p===null) return;
+  if((''+p).trim()!==pin){ alert('Wrong PIN.'); return; }
+  save(K.role,'admin'); applyRole(); renderAll();
+  toast('Admin mode');
+}
+document.getElementById('toStaff').onclick=switchToStaff;
+document.getElementById('toAdmin').onclick=switchToAdmin;
+
 /* network indicator (cosmetic) */
 function netUpdate(){
   var on=navigator.onLine, p=document.getElementById('netPill');
@@ -695,6 +772,7 @@ if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
 }
 
 netUpdate();
+applyRole();
 renderAll();
 </script>
 </body>
